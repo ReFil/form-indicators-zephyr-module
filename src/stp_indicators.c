@@ -52,8 +52,8 @@ struct zmk_stp_ble {
     bool connected;
 };
 
-static struct zmk_led_hsb color0; // BLE Led
-static struct zmk_led_hsb color1; // Caps
+static struct zmk_led_hsb color0; // LED0
+static struct zmk_led_hsb color1; // LED1
 
 static struct zmk_stp_ble ble_status;
 static bool caps;
@@ -157,7 +157,7 @@ static void zmk_stp_indicators_blink_work(struct k_work *work) {
     else
         color0.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
     // Convert HSB to RGB and update LEDs
-    pixels[0] = hsb_to_rgb(color0);
+    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWAP_LEDS)?1:0] = hsb_to_rgb(color0);
     int err = led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
     if (err < 0) {
         LOG_ERR("Failed to update the RGB strip (%d)", err);
@@ -219,7 +219,7 @@ static void zmk_stp_indicators_bluetooth(struct k_work *work) {
     }
     // Convert HSB to RGB and update the LEDs
 
-    pixels[0] = hsb_to_rgb(color0);
+    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWAP_LEDS)?1:0] = hsb_to_rgb(color0);
     int err = led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
     if (err < 0) {
         LOG_ERR("Failed to update the RGB strip (%d)", err);
@@ -227,6 +227,7 @@ static void zmk_stp_indicators_bluetooth(struct k_work *work) {
 }
 
 static void zmk_stp_indicators_caps(struct k_work *work) {
+    #if IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_COLOR_CAPS)
     if (usb) {
         color1.h = 120;
         color1.s = 100;
@@ -235,13 +236,16 @@ static void zmk_stp_indicators_caps(struct k_work *work) {
         color1.s = 100;
     } else
         color1.s = 0;
+    #else
+        color1.s = 0;
+    #endif
     // Set LED on if capslock pressed
     if (caps)
         color1.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
     else
         color1.b = 0;
     // Convert HSB to RGB and update the LEDs
-    pixels[1] = hsb_to_rgb(color1);
+    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWAP_LEDS)?0:1] = hsb_to_rgb(color1);
     int err = led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
     if (err < 0) {
         LOG_ERR("Failed to update the RGB strip (%d)", err);
@@ -409,10 +413,9 @@ static int stp_indicators_event_listener(const zmk_event_t *eh) {
     if (as_zmk_ble_active_profile_changed(eh) && events_en) {
         LOG_DBG("BLE CHANGE LOGGED");
         // Get BLE information, Caps state and set local flags
-        struct zmk_ble_active_profile_changed *ble_state = as_zmk_ble_active_profile_changed(eh);
-        ble_status.connected = ble_state->connected;
-        ble_status.open = ble_state->open;
-        ble_status.prof = ble_state->index;
+        ble_status.connected = zmk_ble_active_profile_is_connected();
+        ble_status.open = zmk_ble_active_profile_is_open();
+        ble_status.prof = zmk_ble_active_profile_index();
         caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
         // Update LEDs
         if (!battery) {

@@ -10,6 +10,16 @@ if ZMK_STP_INDICATORS
 config SPI
     default y
 
+config ZMK_STP_INDICATORS_BEHAVIOR
+    bool "Enable the STP indicators behavior"
+    default y
+
+config ZMK_STP_INDICATORS_SWITCH_LEDS
+    bool "Swap LED0 and LED1"
+
+config ZMK_STP_INDICATORS_COLOR_CAPS
+    bool "illuminate caps LED with profile LED color"
+
 config ZMK_STP_INDICATORS_BRT_MAX
     int "RGB underglow maximum brightness in percent"
     range 0 100
