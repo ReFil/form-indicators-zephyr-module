@@ -388,7 +388,7 @@ static int stp_indicators_auto_state(bool *prev_state, bool new_state) {
 }
 
 static int stp_indicators_event_listener(const zmk_event_t *eh) {
-    LOG_DBG("Event is %s", eh->event->name);
+    LOG_DBG("Event is %s events are %d", eh->event->name, events_en);
     // If going idle or waking up
     if (as_zmk_activity_state_changed(eh) && events_en) {
         static bool prev_state = false;
