@@ -1,4 +1,6 @@
+zephyr_library()
 zephyr_include_directories(include)
+zephyr_include_directories(${APPLICATION_SOURCE_DIR}/include)
 
 target_sources_ifdef(CONFIG_ZMK_STP_INDICATORS_BEHAVIOR app PRIVATE src/behaviors/behavior_stp_indicators.c)
 target_sources_ifdef(CONFIG_ZMK_STP_INDICATORS app PRIVATE src/stp_indicators.c)
