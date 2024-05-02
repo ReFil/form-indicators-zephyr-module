@@ -59,7 +59,7 @@ static struct zmk_stp_ble ble_status;
 static bool caps;
 static bool usb;
 static bool battery;
-static bool events_en = true;
+static bool events_en;
 
 static bool on;
 
@@ -322,8 +322,8 @@ static int zmk_stp_indicators_init(void) {
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
 
-    //if (!events_en)
-    //events_en = true;
+    if (!events_en)
+        events_en = true;
     return 0;
 }
 
