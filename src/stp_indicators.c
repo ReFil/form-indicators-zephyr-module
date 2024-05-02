@@ -324,6 +324,20 @@ static int zmk_stp_indicators_init(void) {
 
     //if (!events_en)
         events_en = true;
+    LOG_DBG("Initialising STP indicators");
+    LOG_DBG("Initialising STP indicators");
+    LOG_DBG("Initialising STP indicators");
+    LOG_DBG("Initialising STP indicators");
+    LOG_DBG("Initialising STP indicators");
+    LOG_DBG("Initialising STP indicators");
+    LOG_DBG("Initialising STP indicators");
+    LOG_DBG("Initialising STP indicators");
+    LOG_DBG("Initialising STP indicators");
+    LOG_DBG("Initialising STP indicators");
+    LOG_DBG("Initialising STP indicators");
+    LOG_DBG("Initialising STP indicators");
+    LOG_DBG("Initialising STP indicators");
+    LOG_DBG("Initialising STP indicators");
 
     return 0;
 }
