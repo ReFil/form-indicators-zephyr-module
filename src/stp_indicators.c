@@ -59,7 +59,6 @@ static struct zmk_stp_ble ble_status;
 static bool caps;
 static bool usb;
 static bool battery;
-static bool events_en = false;
 
 static bool on;
 
@@ -322,8 +321,6 @@ static int zmk_stp_indicators_init(void) {
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
 
-    if (!events_en)
-        events_en = true;
     return 0;
 }
 
@@ -387,15 +384,14 @@ static int stp_indicators_auto_state(bool *prev_state, bool new_state) {
 }
 
 static int stp_indicators_event_listener(const zmk_event_t *eh) {
-    LOG_DBG("Event is %s events are %d", eh->event->name, events_en);
     // If going idle or waking up
-    if (as_zmk_activity_state_changed(eh) && events_en) {
+    if (as_zmk_activity_state_changed(eh)) {
         static bool prev_state = false;
         return stp_indicators_auto_state(&prev_state,
                                          zmk_activity_get_state() == ZMK_ACTIVITY_ACTIVE);
     }
     // If USB state changed
-    if (as_zmk_usb_conn_state_changed(eh) && events_en) {
+    if (as_zmk_usb_conn_state_changed(eh)) {
 
         // Get new USB state, HID state and set local flags
         usb = zmk_usb_is_powered();
@@ -412,7 +408,7 @@ static int stp_indicators_event_listener(const zmk_event_t *eh) {
     }
 
     // If BLE state changed
-    if (as_zmk_ble_active_profile_changed(eh) && events_en) {
+    if (as_zmk_ble_active_profile_changed(eh)) {
         LOG_DBG("BLE CHANGE LOGGED");
         // Get BLE information, Caps state and set local flags
         ble_status.connected = zmk_ble_active_profile_is_connected();
@@ -427,7 +423,7 @@ static int stp_indicators_event_listener(const zmk_event_t *eh) {
         return 0;
     }
 
-    if (as_zmk_hid_indicators_changed(eh) && events_en) {
+    if (as_zmk_hid_indicators_changed(eh)) {
         // Get new HID state, set local flags
         caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
         LOG_DBG("INDICATOR CHANGED: %d", caps);
@@ -448,4 +444,4 @@ ZMK_SUBSCRIPTION(stp_indicators, zmk_usb_conn_state_changed);
 ZMK_SUBSCRIPTION(stp_indicators, zmk_ble_active_profile_changed);
 ZMK_SUBSCRIPTION(stp_indicators, zmk_hid_indicators_changed);
 
-SYS_INIT(zmk_stp_indicators_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
+SYS_INIT(zmk_stp_indicators_init, POST_KERNEL, CONFIG_APPLICATION_INIT_PRIORITY);
