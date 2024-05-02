@@ -157,7 +157,7 @@ static void zmk_stp_indicators_blink_work(struct k_work *work) {
     else
         color0.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
     // Convert HSB to RGB and update LEDs
-    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWAP_LEDS)?1:0] = hsb_to_rgb(color0);
+    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?1:0] = hsb_to_rgb(color0);
     int err = led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
     if (err < 0) {
         LOG_ERR("Failed to update the RGB strip (%d)", err);
@@ -219,8 +219,8 @@ static void zmk_stp_indicators_bluetooth(struct k_work *work) {
     }
     // Convert HSB to RGB and update the LEDs
 
-    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWAP_LEDS)?1:0] = hsb_to_rgb(color0);
-    LOG_DBG("Setting LED:%d", IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWAP_LEDS)?1:0);
+    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?1:0] = hsb_to_rgb(color0);
+    LOG_DBG("Setting LED:%d", IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?1:0);
     int err = led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
     if (err < 0) {
         LOG_ERR("Failed to update the RGB strip (%d)", err);
@@ -246,8 +246,8 @@ static void zmk_stp_indicators_caps(struct k_work *work) {
     else
         color1.b = 0;
     // Convert HSB to RGB and update the LEDs
-    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWAP_LEDS)?0:1] = hsb_to_rgb(color1);
-    LOG_DBG("Setting LED:%d", IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWAP_LEDS)?0:1);
+    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1] = hsb_to_rgb(color1);
+    LOG_DBG("Setting LED:%d", IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1);
     int err = led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
     if (err < 0) {
         LOG_ERR("Failed to update the RGB strip (%d)", err);
