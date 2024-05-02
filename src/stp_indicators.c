@@ -59,7 +59,7 @@ static struct zmk_stp_ble ble_status;
 static bool caps;
 static bool usb;
 static bool battery;
-static bool events_en;
+static bool events_en = false;
 
 static bool on;
 
