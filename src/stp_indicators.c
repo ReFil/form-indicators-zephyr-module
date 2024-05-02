@@ -323,22 +323,7 @@ static int zmk_stp_indicators_init(void) {
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
 
     //if (!events_en)
-        events_en = true;
-    LOG_DBG("Initialising STP indicators");
-    LOG_DBG("Initialising STP indicators");
-    LOG_DBG("Initialising STP indicators");
-    LOG_DBG("Initialising STP indicators");
-    LOG_DBG("Initialising STP indicators");
-    LOG_DBG("Initialising STP indicators");
-    LOG_DBG("Initialising STP indicators");
-    LOG_DBG("Initialising STP indicators");
-    LOG_DBG("Initialising STP indicators");
-    LOG_DBG("Initialising STP indicators");
-    LOG_DBG("Initialising STP indicators");
-    LOG_DBG("Initialising STP indicators");
-    LOG_DBG("Initialising STP indicators");
-    LOG_DBG("Initialising STP indicators");
-
+    events_en = true;
     return 0;
 }
 
