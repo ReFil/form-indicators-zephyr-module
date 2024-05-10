@@ -283,7 +283,9 @@ static int zmk_stp_indicators_init(void) {
     LOG_DBG("Initialising STP indicators");
 
     led_strip = DEVICE_DT_GET(STRIP_CHOSEN);
-/*
+
+#if IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_EXT_POWER)
+
     ext_power = device_get_binding("EXT_POWER");
     if (ext_power == NULL) {
         LOG_ERR("Unable to retrieve ext_power device: EXT_POWER");
@@ -292,7 +294,8 @@ static int zmk_stp_indicators_init(void) {
     int rc = ext_power_enable(ext_power);
     if (rc != 0) {
         LOG_ERR("Unable to enable EXT_POWER: %d", rc);
-    }*/
+    }
+#endif
 
     color0 = (struct zmk_led_hsb){
         h : 240,
@@ -326,14 +329,16 @@ static int zmk_stp_indicators_init(void) {
 int zmk_stp_indicators_on() {
     if (!led_strip)
         return -ENODEV;
-/*
+
+#if IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_EXT_POWER)
     if (ext_power != NULL) {
         int rc = ext_power_enable(ext_power);
         if (rc != 0) {
             LOG_ERR("Unable to enable EXT_POWER: %d", rc);
         }
     }
-*/
+#endif
+
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
 
@@ -353,13 +358,15 @@ K_WORK_DEFINE(underglow_off_work, zmk_stp_indicators_off_handler);
 int zmk_stp_indicators_off() {
     if (!led_strip)
         return -ENODEV;
-/*
+
+#if IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_EXT_POWER)
     if (ext_power != NULL) {
         int rc = ext_power_disable(ext_power);
         if (rc != 0) {
             LOG_ERR("Unable to disable EXT_POWER: %d", rc);
         }
-    }*/
+    }
+#endif
 
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &underglow_off_work);
     on = false;
@@ -381,7 +388,7 @@ static int stp_indicators_auto_state(bool *prev_state, bool new_state) {
         return zmk_stp_indicators_off();
     }
 }
-/*
+
 static int stp_indicators_event_listener(const zmk_event_t *eh) {
     // If going idle or waking up
     if (as_zmk_activity_state_changed(eh)) {
@@ -441,6 +448,6 @@ ZMK_LISTENER(stp_indicators, stp_indicators_event_listener);
 ZMK_SUBSCRIPTION(stp_indicators, zmk_activity_state_changed);
 ZMK_SUBSCRIPTION(stp_indicators, zmk_usb_conn_state_changed);
 ZMK_SUBSCRIPTION(stp_indicators, zmk_ble_active_profile_changed);
-ZMK_SUBSCRIPTION(stp_indicators, zmk_hid_indicators_changed); */
+ZMK_SUBSCRIPTION(stp_indicators, zmk_hid_indicators_changed);
 
 SYS_INIT(zmk_stp_indicators_init, POST_KERNEL, CONFIG_APPLICATION_INIT_PRIORITY);

@@ -25,4 +25,8 @@ config ZMK_STP_INDICATORS_BRT_MAX
     range 0 100
     default 100
 
+config ZMK_STP_INDICATORS_EXT_POWER
+    bool "are we using ext power"
+    default y
+    
 endif
