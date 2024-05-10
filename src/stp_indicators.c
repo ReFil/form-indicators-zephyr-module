@@ -15,7 +15,7 @@
 #include <zephyr/logging/log.h>
 
 #include <zephyr/drivers/led_strip.h>
-#include <drivers/ext_power.h>
+//#include <drivers/ext_power.h>
 
 #include <zmk/stp_indicators.h>
 
@@ -283,7 +283,7 @@ static int zmk_stp_indicators_init(void) {
     LOG_DBG("Initialising STP indicators");
 
     led_strip = DEVICE_DT_GET(STRIP_CHOSEN);
-
+/*
     ext_power = device_get_binding("EXT_POWER");
     if (ext_power == NULL) {
         LOG_ERR("Unable to retrieve ext_power device: EXT_POWER");
@@ -292,7 +292,7 @@ static int zmk_stp_indicators_init(void) {
     int rc = ext_power_enable(ext_power);
     if (rc != 0) {
         LOG_ERR("Unable to enable EXT_POWER: %d", rc);
-    }
+    }*/
 
     color0 = (struct zmk_led_hsb){
         h : 240,
@@ -326,14 +326,14 @@ static int zmk_stp_indicators_init(void) {
 int zmk_stp_indicators_on() {
     if (!led_strip)
         return -ENODEV;
-
+/*
     if (ext_power != NULL) {
         int rc = ext_power_enable(ext_power);
         if (rc != 0) {
             LOG_ERR("Unable to enable EXT_POWER: %d", rc);
         }
     }
-
+*/
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
 
@@ -353,13 +353,13 @@ K_WORK_DEFINE(underglow_off_work, zmk_stp_indicators_off_handler);
 int zmk_stp_indicators_off() {
     if (!led_strip)
         return -ENODEV;
-
+/*
     if (ext_power != NULL) {
         int rc = ext_power_disable(ext_power);
         if (rc != 0) {
             LOG_ERR("Unable to disable EXT_POWER: %d", rc);
         }
-    }
+    }*/
 
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &underglow_off_work);
     on = false;
