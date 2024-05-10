@@ -316,7 +316,6 @@ static int zmk_stp_indicators_init(void) {
     battery = false;
 
     on = true;
-    // Enable events
 
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
@@ -382,7 +381,7 @@ static int stp_indicators_auto_state(bool *prev_state, bool new_state) {
         return zmk_stp_indicators_off();
     }
 }
-
+/*
 static int stp_indicators_event_listener(const zmk_event_t *eh) {
     // If going idle or waking up
     if (as_zmk_activity_state_changed(eh)) {
@@ -442,6 +441,6 @@ ZMK_LISTENER(stp_indicators, stp_indicators_event_listener);
 ZMK_SUBSCRIPTION(stp_indicators, zmk_activity_state_changed);
 ZMK_SUBSCRIPTION(stp_indicators, zmk_usb_conn_state_changed);
 ZMK_SUBSCRIPTION(stp_indicators, zmk_ble_active_profile_changed);
-ZMK_SUBSCRIPTION(stp_indicators, zmk_hid_indicators_changed);
+ZMK_SUBSCRIPTION(stp_indicators, zmk_hid_indicators_changed); */
 
 SYS_INIT(zmk_stp_indicators_init, POST_KERNEL, CONFIG_APPLICATION_INIT_PRIORITY);
