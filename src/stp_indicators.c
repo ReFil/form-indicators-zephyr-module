@@ -183,6 +183,13 @@ static void zmk_stp_indicators_battery_blink_handler(struct k_timer *timer) {
 // Define timers for blinking and led timeout
 K_TIMER_DEFINE(battery_blink_timer, zmk_stp_indicators_battery_blink_handler, NULL);
 
+static void zmk_stp_indicators_battery_timer_handler(struct k_timer *timer) {
+//do some battery stuf here   
+}
+
+// Define timers for blinking and led timeout
+K_TIMER_DEFINE(battery_blink_timer, zmk_stp_indicators_battery_timer_handler, NULL);
+
 static void zmk_stp_indicators_blink_work(struct k_work *work) {
     LOG_DBG("Blink work triggered");
     // If LED on turn off and vice cersa
@@ -477,12 +484,14 @@ static int stp_indicators_event_listener(const zmk_event_t *eh) {
     #ifdef CONFIG_ZMK_STP_INDICATORS_LOW_BATTERY
     if (as_zmk_battery_state_changed(eh)) {
         // Get battery state, if low blinky blinky
+
+        LOG_DBG("Battery event");
         if(zmk_battery_state_of_charge() < CONFIG_ZMK_STP_INDICATORS_BATTERY_THRESHOLD) {
             battery=true; 
             k_timer_stop(&slow_blink_timer);
             k_timer_stop(&fast_blink_timer);
             k_timer_stop(&connected_timeout_timer);
-            k_timer_start(&fast_blink_timer, K_NO_WAIT, K_MSEC(200));
+            k_timer_start(&fast_battery_blink_timer, K_NO_WAIT, K_MSEC(200));
 
         }
         return 0;
