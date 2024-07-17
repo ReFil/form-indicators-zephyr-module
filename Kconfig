@@ -6,7 +6,6 @@ menuconfig ZMK_STP_INDICATORS
 
 if ZMK_STP_INDICATORS
 
-# This default value cuts down on tons of excess .conf files, if you're using GPIO, manually disable this
 config SPI
     default y
 
@@ -28,5 +27,14 @@ config ZMK_STP_INDICATORS_BRT_MAX
 config ZMK_STP_INDICATORS_EXT_POWER
     bool "are we using ext power"
     default y
+
+config ZMK_STP_INDICATORS_LOW_BATTERY
+    bool "Low battery indicator"
+    default y
+
+config ZMK_STP_INDICATORS_BATTERY_THRESHOLD
+    int "When we decide battery low"
+    range 0 100
+    default 10
     
 endif

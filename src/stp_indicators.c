@@ -29,6 +29,8 @@
 #include <zmk/events/usb_conn_state_changed.h>
 #include <zmk/events/ble_active_profile_changed.h>
 #include <zmk/events/hid_indicators_changed.h>
+#include <zmk/events/battery_state_changed.h>
+
 #include <zmk/workqueue.h>
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
@@ -147,6 +149,39 @@ static void zmk_stp_indicators_batt(struct k_work *work) {
         LOG_ERR("Failed to update the RGB strip (%d)", err);
     }
 }
+
+static void zmk_stp_indicators_battery_blink_work(struct k_work *work) {
+    LOG_DBG("Blink work triggered");
+    // If LED on turn off and vice cersa
+    color0.h = 0;
+    color0.s = 100;
+    color1.h = 0;
+    color1.s = 100;
+    if (color0.b){
+        color0.b = 0;
+        color1.b = 0;
+    }
+    else{
+        color0.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
+        color1.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
+        }
+    // Convert HSB to RGB and update LEDs
+    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?1:0] = hsb_to_rgb(color0);
+    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1] = hsb_to_rgb(color1);
+    int err = led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
+    if (err < 0) {
+        LOG_ERR("Failed to update the RGB strip (%d)", err);
+    }
+}
+
+K_WORK_DEFINE(battery_blink_work, zmk_stp_indicators_battery_blink_work);
+
+static void zmk_stp_indicators_battery_blink_handler(struct k_timer *timer) {
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &battery_blink_work);
+}
+
+// Define timers for blinking and led timeout
+K_TIMER_DEFINE(battery_blink_timer, zmk_stp_indicators_battery_blink_handler, NULL);
 
 static void zmk_stp_indicators_blink_work(struct k_work *work) {
     LOG_DBG("Blink work triggered");
@@ -439,6 +474,20 @@ static int stp_indicators_event_listener(const zmk_event_t *eh) {
         }
         return 0;
     }
+    #ifdef CONFIG_ZMK_STP_INDICATORS_LOW_BATTERY
+    if (as_zmk_battery_state_changed(eh)) {
+        // Get battery state, if low blinky blinky
+        if(zmk_battery_state_of_charge() < CONFIG_ZMK_STP_INDICATORS_BATTERY_THRESHOLD) {
+            battery=true; 
+            k_timer_stop(&slow_blink_timer);
+            k_timer_stop(&fast_blink_timer);
+            k_timer_stop(&connected_timeout_timer);
+            k_timer_start(&fast_blink_timer, K_NO_WAIT, K_MSEC(200));
+
+        }
+        return 0;
+    }
+    #endif
 
     return -ENOTSUP;
 }
@@ -449,5 +498,8 @@ ZMK_SUBSCRIPTION(stp_indicators, zmk_activity_state_changed);
 ZMK_SUBSCRIPTION(stp_indicators, zmk_usb_conn_state_changed);
 ZMK_SUBSCRIPTION(stp_indicators, zmk_ble_active_profile_changed);
 ZMK_SUBSCRIPTION(stp_indicators, zmk_hid_indicators_changed);
+#ifdef CONFIG_ZMK_STP_INDICATORS_LOW_BATTERY
+ZMK_SUBSCRIPTION(stp_indicators, zmk_battery_state_changed);
+#endif
 
 SYS_INIT(zmk_stp_indicators_init, POST_KERNEL, CONFIG_APPLICATION_INIT_PRIORITY);
