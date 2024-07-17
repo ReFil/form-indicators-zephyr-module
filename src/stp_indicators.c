@@ -188,7 +188,14 @@ static void zmk_stp_indicators_battery_timer_handler(struct k_timer *timer) {
 }
 
 // Define timers for blinking and led timeout
-K_TIMER_DEFINE(battery_blink_timer, zmk_stp_indicators_battery_timer_handler, NULL);
+K_TIMER_DEFINE(battery_timeout_timer, zmk_stp_indicators_battery_timer_handler, NULL);
+
+static void zmk_stp_indicators_battery_low_timer_handler(struct k_timer *timer) {
+//do some battery stuf here   
+}
+
+// Define timers for blinking and led timeout
+K_TIMER_DEFINE(battery_low_timer, zmk_stp_indicators_battery_low_timer_handler, NULL);
 
 static void zmk_stp_indicators_blink_work(struct k_work *work) {
     LOG_DBG("Blink work triggered");
