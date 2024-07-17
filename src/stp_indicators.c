@@ -498,7 +498,7 @@ static int stp_indicators_event_listener(const zmk_event_t *eh) {
             k_timer_stop(&slow_blink_timer);
             k_timer_stop(&fast_blink_timer);
             k_timer_stop(&connected_timeout_timer);
-            k_timer_start(&fast_battery_blink_timer, K_NO_WAIT, K_MSEC(200));
+            k_timer_start(&battery_low_timer, K_NO_WAIT, K_MINUTE(1));
 
         }
         return 0;
