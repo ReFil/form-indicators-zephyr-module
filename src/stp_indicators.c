@@ -499,6 +499,7 @@ static int stp_indicators_event_listener(const zmk_event_t *eh) {
 
         LOG_DBG("Battery event");
         if(zmk_battery_state_of_charge() < CONFIG_ZMK_STP_INDICATORS_BATTERY_THRESHOLD) {
+            LOG_DBG("LOW BATTERY WARNING GOBRR");
             battery=true; 
             k_timer_stop(&slow_blink_timer);
             k_timer_stop(&fast_blink_timer);
