@@ -150,58 +150,6 @@ static void zmk_stp_indicators_batt(struct k_work *work) {
     }
 }
 
-static void zmk_stp_indicators_battery_blink_work(struct k_work *work) {
-    LOG_DBG("Blink work triggered");
-    // If LED on turn off and vice cersa
-    color0.h = 0;
-    color0.s = 100;
-    color1.h = 0;
-    color1.s = 100;
-    if (color0.b){
-        color0.b = 0;
-        color1.b = 0;
-    }
-    else{
-        color0.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
-        color1.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
-        }
-    // Convert HSB to RGB and update LEDs
-    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?1:0] = hsb_to_rgb(color0);
-    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1] = hsb_to_rgb(color1);
-    int err = led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
-    if (err < 0) {
-        LOG_ERR("Failed to update the RGB strip (%d)", err);
-    }
-}
-
-K_WORK_DEFINE(battery_blink_work, zmk_stp_indicators_battery_blink_work);
-
-static void zmk_stp_indicators_battery_blink_handler(struct k_timer *timer) {
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &battery_blink_work);
-}
-
-// Define timers for blinking and led timeout
-K_TIMER_DEFINE(battery_blink_timer, zmk_stp_indicators_battery_blink_handler, NULL);
-
-static void zmk_stp_indicators_battery_timer_handler(struct k_timer *timer) {
-//do some battery stuf here  
-battery = false;
-k_timer_stop(&battery_blink_timer); 
-}
-
-// Define timers for blinking and led timeout
-K_TIMER_DEFINE(battery_timeout_timer, zmk_stp_indicators_battery_timer_handler, NULL);
-
-static void zmk_stp_indicators_battery_low_timer_handler(struct k_timer *timer) {
-//do some battery stuf here
-battery = true;
-k_timer_start(&battery_blink_timer, K_NO_WAIT, K_MSEC(750));
-k_timer_start(&battery_timeout_timer, K_SECONDS(5), K_NO_WAIT);
-}
-
-// Define timers for blinking and led timeout
-K_TIMER_DEFINE(battery_low_timer, zmk_stp_indicators_battery_low_timer_handler, NULL);
-
 static void zmk_stp_indicators_blink_work(struct k_work *work) {
     LOG_DBG("Blink work triggered");
     // If LED on turn off and vice cersa
@@ -311,6 +259,60 @@ static void zmk_stp_indicators_caps(struct k_work *work) {
 K_WORK_DEFINE(battery_ind_work, zmk_stp_indicators_batt);
 K_WORK_DEFINE(bluetooth_ind_work, zmk_stp_indicators_bluetooth);
 K_WORK_DEFINE(caps_ind_work, zmk_stp_indicators_caps);
+
+static void zmk_stp_indicators_battery_blink_work(struct k_work *work) {
+    LOG_DBG("Blink work triggered");
+    // If LED on turn off and vice cersa
+    color0.h = 0;
+    color0.s = 100;
+    color1.h = 0;
+    color1.s = 100;
+    if (color0.b){
+        color0.b = 0;
+        color1.b = 0;
+    }
+    else{
+        color0.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
+        color1.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
+        }
+    // Convert HSB to RGB and update LEDs
+    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?1:0] = hsb_to_rgb(color0);
+    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1] = hsb_to_rgb(color1);
+    int err = led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
+    if (err < 0) {
+        LOG_ERR("Failed to update the RGB strip (%d)", err);
+    }
+}
+
+K_WORK_DEFINE(battery_blink_work, zmk_stp_indicators_battery_blink_work);
+
+static void zmk_stp_indicators_battery_blink_handler(struct k_timer *timer) {
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &battery_blink_work);
+}
+
+// Define timers for blinking and led timeout
+K_TIMER_DEFINE(battery_blink_timer, zmk_stp_indicators_battery_blink_handler, NULL);
+
+static void zmk_stp_indicators_battery_timer_handler(struct k_timer *timer) {
+//do some battery stuf here  
+battery = false;
+k_timer_stop(&battery_blink_timer); 
+k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
+            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
+}
+
+// Define timers for blinking and led timeout
+K_TIMER_DEFINE(battery_timeout_timer, zmk_stp_indicators_battery_timer_handler, NULL);
+
+static void zmk_stp_indicators_battery_low_timer_handler(struct k_timer *timer) {
+//do some battery stuf here
+battery = true;
+k_timer_start(&battery_blink_timer, K_NO_WAIT, K_MSEC(750));
+k_timer_start(&battery_timeout_timer, K_SECONDS(5), K_NO_WAIT);
+}
+
+// Define timers for blinking and led timeout
+K_TIMER_DEFINE(battery_low_timer, zmk_stp_indicators_battery_low_timer_handler, NULL);
 
 int zmk_stp_indicators_enable_batt() {
     // Stop blinking timers
