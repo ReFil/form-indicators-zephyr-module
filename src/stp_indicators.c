@@ -26,10 +26,11 @@
 #include <zmk/hid_indicators.h>
 #include <zmk/event_manager.h>
 #include <zmk/events/activity_state_changed.h>
-#include <zmk/events/usb_conn_state_changed.h>
+#include <zmk/events/endpoint_changed.h>
 #include <zmk/events/ble_active_profile_changed.h>
 #include <zmk/events/hid_indicators_changed.h>
 #include <zmk/events/battery_state_changed.h>
+#include <zmk/endpoints.h>
 
 #include <zmk/workqueue.h>
 
@@ -179,9 +180,8 @@ K_TIMER_DEFINE(connected_timeout_timer, zmk_stp_indicators_blink_handler, NULL);
 static void zmk_stp_indicators_bluetooth(struct k_work *work) {
     // Set LED to blue if profile one, set sat to 0 if profile 0 (white)
     LOG_DBG("BLE PROFILE: %d", ble_status.prof);
-
+    color0.h = 240;
     if (ble_status.prof) {
-        color0.h = 240;
         color0.s = 100;
     } else
         color0.s = 0;
@@ -453,11 +453,11 @@ static int stp_indicators_event_listener(const zmk_event_t *eh) {
                                          zmk_activity_get_state() == ZMK_ACTIVITY_ACTIVE);
     }
     // If USB state changed
-    if (as_zmk_usb_conn_state_changed(eh)) {
+    if (as_zmk_endpoint_changed(eh)) {
 
         // Get new USB state, HID state and set local flags
-        usb = zmk_usb_is_powered();
-        LOG_DBG("USB EVENT: %d", usb);
+        usb = !zmk_endpoint_instance_to_index(zmk_endpoints_selected());
+        LOG_DBG("ENDPOINT EVENT: %d", usb);
 
         caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
         //  Update LEDs
@@ -519,7 +519,7 @@ static int stp_indicators_event_listener(const zmk_event_t *eh) {
 ZMK_LISTENER(stp_indicators, stp_indicators_event_listener);
 
 ZMK_SUBSCRIPTION(stp_indicators, zmk_activity_state_changed);
-ZMK_SUBSCRIPTION(stp_indicators, zmk_usb_conn_state_changed);
+ZMK_SUBSCRIPTION(stp_indicators, zmk_endpoint_changed);
 ZMK_SUBSCRIPTION(stp_indicators, zmk_ble_active_profile_changed);
 ZMK_SUBSCRIPTION(stp_indicators, zmk_hid_indicators_changed);
 #ifdef CONFIG_ZMK_STP_INDICATORS_LOW_BATTERY
